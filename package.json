@@ -7,7 +7,8 @@
   "scripts": {
     "app": "node server.js",
     "start": "pm2 start pm2.json",
-    "stop": "pm2 stop pm2.json"
+    "stop": "pm2 stop pm2.json",
+    "docker-build": "docker build -t media:v1 ."
   },
   "author": "",
   "dependencies": {

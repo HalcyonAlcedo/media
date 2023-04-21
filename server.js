@@ -26,7 +26,7 @@ server.post('/audio', async (request, reply) => {
 })
 
 server.listen({
-    port: 3031,
+    port: 3000,
     host: '::'
   }, (error) => {
     if (error) {
