@@ -12,7 +12,6 @@ export async function getPttBuffer(file, ffmpeg = 'ffmpeg') {
     let buffer
     let time
     if (file instanceof Buffer || file.startsWith('base64://')) {
-        console.log('Buffer')
         // Buffer或base64
         const buf = file instanceof Buffer ? file : Buffer.from(file.slice(9), 'base64')
         const head = buf.slice(0, 7).toString()
@@ -24,7 +23,6 @@ export async function getPttBuffer(file, ffmpeg = 'ffmpeg') {
             return audioTrans(tmpfile, ffmpeg)
         }
     } else if (file.startsWith('http://') || file.startsWith('https://')) {
-        console.log('http')
         // 网络文件
         // const readable = (await axios.get(file, { responseType: "stream" })).data;
         try {
@@ -37,7 +35,6 @@ export async function getPttBuffer(file, ffmpeg = 'ffmpeg') {
             })
             const buf = Buffer.from(await response.arrayBuffer())
             const tmpfile = TMP_DIR + '/' + (0, uuid)()
-            console.log('保存文件' + tmpfile)
             await fs.promises.writeFile(tmpfile, buf)
             // await (0, pipeline)(readable.pipe(new DownloadTransform), fs.createWriteStream(tmpfile));
             const head = await read7Bytes(tmpfile)
@@ -51,7 +48,6 @@ export async function getPttBuffer(file, ffmpeg = 'ffmpeg') {
             console.log(err)
          }
     } else {
-        console.log('file')
         // 本地文件
         file = String(file).replace(/^file:\/{2}/, '')
         IS_WIN && file.startsWith('/') && (file = file.slice(1))
@@ -68,7 +64,6 @@ export async function getPttBuffer(file, ffmpeg = 'ffmpeg') {
 async function audioTrans(file, ffmpeg = 'ffmpeg') {
     return new Promise((resolve, reject) => {
         const tmpfile = TMP_DIR + '/' + (0, uuid)();
-        console.log(`${ffmpeg} -i "${file}" -f s16le -ac 1 -ar 24000 "${tmpfile}"`)
         (0, child_process.exec)(`${ffmpeg} -i "${file}" -f s16le -ac 1 -ar 24000 "${tmpfile}"`, async (error, stdout, stderr) => {
             try {
                 resolve(pcm2slk(fs.readFileSync(tmpfile)))
