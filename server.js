@@ -15,8 +15,8 @@ server.get('*', (request, reply) => {
 })
 server.post('/audio', async (request, reply) => {
     const body = request.body || {}
-    if (body.recordUrl) {
-        const result = await getPttBuffer(body.recordUrl)
+    if (body.recordUrl || body.recordBuffer) {
+        const result = await getPttBuffer(body.recordUrl || body.recordBuffer)
         if (!result.buffer) {
             reply.send({error: '转码失败'})
         } else {
