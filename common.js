@@ -91,7 +91,9 @@ export async function screenshot(url, opt) {
         // 访问指定的网址，比如http://example.com
         await page.goto(url, { timeout: opt.timeout || 12000 })
         // 等待页面加载完成
-        await page.waitForSelector('body')
+        await page.waitForSelector(opt.selector || 'body')
+        // 页面加载完成后等待多少毫秒
+        await page.waitForTimeout(opt.wait || 0)
         // 将页面保存为图片，比如example.png，你可以自己指定图片的格式和质量等选项
         let base64 = await page.screenshot({ encoding: 'base64', fullPage: true })
         // 关闭页面
