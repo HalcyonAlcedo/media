@@ -117,16 +117,16 @@ export async function checkWebsite(url) {
 
 async function audioTrans(file, ffmpeg = 'ffmpeg') {
     return new Promise((resolve, reject) => {
-        const tmpfile = TMP_DIR + '/' + (0, uuid)()
-            (0, child_process.exec)(`${ffmpeg} -i "${file}" -f s16le -ac 1 -ar 24000 "${tmpfile}"`, async (error, stdout, stderr) => {
-                try {
-                    resolve(pcm2slk(fs.readFileSync(tmpfile)))
-                } catch {
-                    reject('转码失败')
-                } finally {
-                    fs.unlink(tmpfile, NOOP)
-                }
-            })
+        const tmpfile = TMP_DIR + '/' + (0, uuid)();
+        (0, child_process.exec)(`${ffmpeg} -i "${file}" -f s16le -ac 1 -ar 24000 "${tmpfile}"`, async (error, stdout, stderr) => {
+            try {
+                resolve(pcm2slk(fs.readFileSync(tmpfile)))
+            } catch {
+                reject('转码失败')
+            } finally {
+                fs.unlink(tmpfile, NOOP)
+            }
+        })
     })
 }
 
