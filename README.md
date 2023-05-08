@@ -39,5 +39,6 @@ option.width|int     |渲染窗口宽度
 option.height|int     |渲染窗口高度
 option.timeout|int     |访问超时时间
 option.wait|int     |页面等待时间
+option.wait|string('load'、'domcontentloaded'、'networkidle0'、'networkidle2') |waitUtil参数
 option.selector|string     |页面加载完成选择器
 type|string     |返回类型,可选base64和image

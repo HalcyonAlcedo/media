@@ -73,6 +73,7 @@ export async function launchBrowser() {
     }
     // 启动一个无头浏览器，并且赋值给全局变量
     browser = await puppeteer.launch({
+        headless: "new",
         args: ['--no-sandbox', "--disabled-setupid-sandbox"]
     })
 }
@@ -89,7 +90,7 @@ export async function screenshot(url, opt) {
         // 设置页面的视口大小
         await page.setViewport({ width: opt.width || 800, height: opt.height || 600 })
         // 访问指定的网址，比如http://example.com
-        await page.goto(url, { timeout: opt.timeout || 12000 })
+        await page.goto(url, { timeout: opt.timeout || 12000 , waitUtil: opt.waitUtil || 'networkidle2'})
         // 等待页面加载完成
         await page.waitForSelector(opt.selector || 'body')
         // 页面加载完成后等待多少毫秒
