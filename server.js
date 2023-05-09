@@ -71,6 +71,19 @@ server.post('/screenshot', async (request, reply) => {
     reply.send({error: '错误：无效参数'})
   }
 })
+//网址检查
+server.post('/check', async (request, reply) => {
+  const body = request.body || {}
+  if (!body.url) { 
+    reply.send({ state: 'error', error: '参数错误' }) 
+    return 
+  }
+  if (await checkWebsite(body.url)) {
+    reply.send({ state: 'ok' })
+  } else {
+    reply.send({ state: 'error', error: '内容服务器无法正常访问，请检查外网端口是否开放' })
+  }
+})
 
 server.listen({
   port: 3000,
