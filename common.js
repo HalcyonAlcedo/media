@@ -93,8 +93,8 @@ export async function screenshot(url, opt) {
         await page.goto(url, { timeout: opt.timeout || 12000 , waitUtil: opt.waitUtil || 'networkidle2'})
         // 等待页面加载完成
         if (opt.selector)  await page.waitForSelector(opt.selector)
-        if (opt.wait) await page.waitForTimeout(opt.wait)
         if (opt.func) await page.waitForFunction(opt.func)
+        if (opt.wait) await page.waitForTimeout(opt.wait)
         // 将页面保存为图片，比如example.png，你可以自己指定图片的格式和质量等选项
         let base64 = await page.screenshot({ encoding: 'base64', fullPage: true })
         // 关闭页面
