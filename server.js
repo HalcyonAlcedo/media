@@ -1,6 +1,7 @@
 import fastify from 'fastify'
 import cors from '@fastify/cors'
 import multipart from '@fastify/multipart'
+import fs from 'fs'
 
 import { getPttBuffer, launchBrowser, screenshot, checkWebsite } from './common.js'
 
@@ -12,8 +13,24 @@ await server.register(multipart)
 await server.register(cors, {
   origin: '*'
 })
+server.get('/', (request, reply) => {
+  fs.readFile("./index.html", (err, data) => {
+    if (err) {
+      // 如果出错，返回错误信息
+      reply.send(err)
+    } else {
+      // 如果成功，设置响应的内容类型为text/html，并发送响应
+      reply.type("text/html").send(data)
+    }
+  })
+})
 server.get('*', (request, reply) => {
-  reply.send('-- Media Server --')
+  reply.send({
+    state: 'error',
+    code: '404',
+    url: request.url.trim(),
+    error: `无效的访问接口`
+  })
 })
 
 // 云语音转码
