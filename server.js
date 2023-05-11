@@ -88,7 +88,7 @@ server.post('/screenshot', async (request, reply) => {
     reply.send({error: '错误：无效参数'})
   }
 })
-//网址检查
+// 网址检查
 server.post('/check', async (request, reply) => {
   const body = request.body || {}
   if (!body.url) { 

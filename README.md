@@ -37,8 +37,10 @@ url	|string     |请求的网址
 option|object		|参数
 option.width|int     |渲染窗口宽度
 option.height|int     |渲染窗口高度
+option.dpr|int     |渲染DPR
 option.timeout|int     |访问超时时间
 option.wait|int     |页面等待时间
 option.waitUtil|string('load'、'domcontentloaded'、'networkidle0'、'networkidle2') |waitUtil参数
+option.func|string |waitFunction参数
 option.selector|string     |页面加载完成选择器
 type|string     |返回类型,可选base64和image
