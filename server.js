@@ -32,7 +32,14 @@ server.get('*', (request, reply) => {
     error: `无效的访问接口`
   })
 })
-
+server.post('*', (request, reply) => {
+  reply.send({
+    state: 'error',
+    code: '404',
+    url: request.url.trim(),
+    error: `无效的访问接口`
+  })
+})
 // 云语音转码
 server.post('/audio', async (request, reply) => {
   let result
