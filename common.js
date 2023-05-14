@@ -11,6 +11,8 @@ import { pcm2slk } from 'node-silk'
 
 //浏览器
 let browser
+//是否正在截图
+let onScreenshot = false
 
 export async function getPttBuffer(file, ffmpeg = 'ffmpeg') {
     let buffer
@@ -68,7 +70,7 @@ export async function getPttBuffer(file, ffmpeg = 'ffmpeg') {
 // 启动浏览器
 export async function launchBrowser() {
     // 如果浏览器已经存在，就先关闭它
-    if (browser) {
+    if (browser && !onScreenshot) {
         await browser.close()
     }
     // 启动一个无头浏览器，并且赋值给全局变量
@@ -84,6 +86,7 @@ export async function screenshot(url, opt) {
     if (!browser) {
         await launchBrowser()
     }
+    onScreenshot = true
     try {
         // 创建一个新的页面
         const page = await browser.newPage()
@@ -99,8 +102,10 @@ export async function screenshot(url, opt) {
         let base64 = await page.screenshot({ encoding: 'base64', fullPage: true })
         // 关闭页面
         await page.close()
+        onScreenshot = false
         return base64
     } catch (e) {
+        onScreenshot = false
         return false
     }
 }
