@@ -45,8 +45,13 @@ server.post('/audio', async (request, reply) => {
   let result
   if (request.headers['content-type'].includes('multipart/form-data')) {
     const files = await request.saveRequestFiles()
-    if (files.length > 0)
+    if (files.length > 0){
       result = await getPttBuffer(files[0].filepath)
+      if (result) {
+        reply.send(result.buffer)
+        return
+      }
+    }
     else {
       reply.send({ error: '无文件' })
       return
