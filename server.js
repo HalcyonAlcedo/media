@@ -6,7 +6,7 @@ import fs from 'fs'
 import { getPttBuffer, launchBrowser, screenshot, checkWebsite } from './common.js'
 
 const server = fastify({
-  bodyLimit: 10 * 1024 * 1024, //30m文件限制
+  bodyLimit: 30 * 1024 * 1024, //30m文件限制
   logger: true
 })
 await server.register(multipart)
