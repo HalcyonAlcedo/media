@@ -44,3 +44,6 @@ option.waitUtil|string('load'、'domcontentloaded'、'networkidle0'、'networkid
 option.func|string |waitFunction参数
 option.selector|string     |页面加载完成选择器
 type|string     |返回类型,可选base64和image
+
+## chatgpt-plugin专用云服务
+将允许chatgpt-plugin插件通过ws连接到此服务，通过云端代理访问数据

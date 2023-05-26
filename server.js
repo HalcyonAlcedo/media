@@ -1,9 +1,14 @@
 import fastify from 'fastify'
 import cors from '@fastify/cors'
 import multipart from '@fastify/multipart'
+import fstatic from '@fastify/static'
+import path from 'path'
 import fs from 'fs'
 
-import { getPttBuffer, launchBrowser, screenshot, checkWebsite } from './common.js'
+import { getPttBuffer, launchBrowser, screenshot, checkWebsite, getPublicIP } from './common.js'
+
+const serverPort = 3000
+const __dirname = path.resolve()
 
 const server = fastify({
   bodyLimit: 30 * 1024 * 1024, //30m文件限制
@@ -22,14 +27,6 @@ server.get('/', (request, reply) => {
       // 如果成功，设置响应的内容类型为text/html，并发送响应
       reply.type("text/html").send(data)
     }
-  })
-})
-server.get('*', (request, reply) => {
-  reply.send({
-    state: 'error',
-    code: '404',
-    url: request.url.trim(),
-    error: `无效的访问接口`
   })
 })
 server.post('*', (request, reply) => {
@@ -114,8 +111,85 @@ server.post('/check', async (request, reply) => {
   }
 })
 
+// chatgpt插件
+await server.register(fstatic, {
+  root: path.join(__dirname, 'resources/chatgpt-plugin/')
+})
+await server.get('/page/*', (request, reply) => {
+  const stream = fs.createReadStream('resources/chatgpt-plugin/index.html')
+  reply.type('text/html').send(stream)
+})
+server.post('/page', async (request, reply) => {
+  const body = request.body || {}
+  if (body.code) {
+    const dir = 'cache/ChatGPTCache'
+    const filename = body.code + '.json'
+    const filepath = path.join(dir, filename)
+    let data = fs.readFileSync(filepath, 'utf8')
+    reply.send(data)
+  }
+})
+server.post('/cache', async (request, reply) => {
+  const body = request.body || {}
+  if (body.content) {
+    const dir = 'cache/ChatGPTCache'
+    const filename = body.entry + '.json'
+    const filepath = path.join(dir, filename)
+    const ip = await getPublicIP()
+    let botName = ''
+    switch (body.model) {
+      case 'bing':
+        botName = 'Bing'
+        break
+      case 'api':
+        botName = 'ChatGPT'
+        break
+      case 'api3':
+        botName = 'ChatGPT'
+        break
+      case 'browser':
+        botName = 'ChatGPT'
+        break
+      case 'chatglm':
+        botName = 'ChatGLM'
+        break
+      case 'claude':
+        botName = 'Claude'
+        break
+      default:
+        botName = body.model
+        break
+    }
+    try {
+      fs.mkdirSync(dir, { recursive: true })
+      const data = {
+        user: body.content.senderName,
+        bot: body.chatViewBotName || botName,
+        userImg: body.userImg || '',
+        botImg: body.botImg || '',
+        question: body.content.prompt,
+        message: body.content.content,
+        group: body.content.group,
+        herf: `http://${ip + ':' + serverPort}/page/${body.entry}`,
+        quote: body.content.quote,
+        images: body.content.images || [],
+        suggest: body.content.suggest || [],
+        model: body.model,
+        mood: body.content.mood || 'blandness',
+        live2d: false,
+        time: new Date()
+      }
+      fs.writeFileSync(filepath, JSON.stringify(data))
+      reply.send({ file: body.entry, cacheUrl: `http://${ip + ':' + serverPort}/page/${body.entry}` })
+    } catch (err) {
+      server.log.error(`用户生成缓存${body.entry}时发生错误： ${err}`)
+      reply.send({ file: body.entry, cacheUrl: `http://${ip + ':' + serverPort}/page/${body.entry}`, error: body.entry + '生成失败' })
+    }
+  }
+})
+
 server.listen({
-  port: 3000,
+  port: serverPort,
   host: '::'
 }, async (error) => {
   if (error) {

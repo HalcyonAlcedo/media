@@ -13,6 +13,8 @@ import { pcm2slk } from 'node-silk'
 let browser
 //是否正在截图
 let onScreenshot = false
+//当前服务器ip
+let localIP = ''
 
 export async function getPttBuffer(file, ffmpeg = 'ffmpeg') {
     let buffer
@@ -119,6 +121,20 @@ export async function checkWebsite(url) {
         console.log(error)
         return false
     }
+}
+
+// 获取服务器ip
+export async function getPublicIP () {
+  try {
+    if (localIP === '') {
+      const res = await fetch('https://api.ipify.org?format=json')
+      const data = await res.json()
+      localIP = data.ip
+    }
+    return localIP
+  } catch (err) {
+    return '127.0.0.1'
+  }
 }
 
 async function audioTrans(file, ffmpeg = 'ffmpeg') {

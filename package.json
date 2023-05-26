@@ -1,6 +1,6 @@
 {
   "name": "media",
-  "version": "1.1.5",
+  "version": "1.2.0",
   "description": "",
   "type": "module",
   "main": "server.js",
@@ -8,12 +8,13 @@
     "app": "node server.js",
     "start": "pm2 start pm2.json",
     "stop": "pm2 stop pm2.json",
-    "docker-build": "docker build -t media:v1.1 ."
+    "docker-build": "docker build -t media:v1.2 ."
   },
   "author": "",
   "dependencies": {
     "@fastify/cors": "^8.2.1",
     "@fastify/multipart": "^7.6.0",
+    "@fastify/static": "^6.10.2",
     "fastify": "^4.15.0",
     "node-silk": "^0.1.0",
     "pm2": "^5.3.0",

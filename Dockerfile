@@ -12,6 +12,7 @@ RUN apt-get update \
     && rm -rf /var/lib/apt/lists/*
 
 COPY . /home/www/nodeRule
+RUN chown -R node /home/www/nodeRule
 RUN yarn
 EXPOSE 3000
 ENTRYPOINT ["npm", "run"]
