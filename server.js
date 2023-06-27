@@ -2,6 +2,7 @@ import fastify from 'fastify'
 import cors from '@fastify/cors'
 import multipart from '@fastify/multipart'
 import fstatic from '@fastify/static'
+import websocket from '@fastify/websocket'
 import path from 'path'
 import fs from 'fs'
 
@@ -17,6 +18,12 @@ const server = fastify({
 await server.register(multipart)
 await server.register(cors, {
   origin: '*'
+})
+await server.register(websocket, {
+  cors: true,
+  options: {
+    maxPayload: 1048576
+  }
 })
 server.get('/', (request, reply) => {
   fs.readFile("./index.html", (err, data) => {
@@ -187,6 +194,83 @@ server.post('/cache', async (request, reply) => {
     }
   }
 })
+
+// websocket转发
+let clients = []
+let servers = []
+const wsFn = async (connection, request) => {
+  connection.socket.on('open', message => {
+    // 开始连接
+    console.log(`Received message: ${message}`)
+    const response = { data: 'hello, client' }
+    connection.socket.send(JSON.stringify(response))
+  })
+  connection.socket.on('message', async (message) => {
+    try {
+      const data = JSON.parse(message)
+      if (!data.type) {
+        await connection.socket.send(JSON.stringify({ data: data, error: '当前为media数据中转服务，请明确链接类型后再次发送！' }))
+        return
+      }
+      // 注册链接
+      if (data.command === 'register') {
+        if (data.region) {
+          if (data.type === 'server') {
+            const serverToken = Math.random().toString(36).slice(2, 18)
+            servers[data.region] = {
+              region: data.region,
+              client: connection.socket,
+              token: serverToken,
+            }
+            await connection.socket.send(JSON.stringify({ state: true, token: serverToken }))
+          } else if (data.type === 'client' && data.serverToken) {
+            if (servers[data.region] && servers[data.region].token === data.serverToken) {
+              clients[data.region] = {
+                region: data.region,
+                user: data.user,
+                client: connection.socket,
+              }
+              await connection.socket.send(JSON.stringify({ state: true }))
+            } else {
+              await connection.socket.send(JSON.stringify({ state: false }))
+            }
+          } else {
+            await connection.socket.send(JSON.stringify({ state: false }))
+          }
+        } else {
+          await connection.socket.send(JSON.stringify({ state: false }))
+        }
+        return
+      }
+      // 客户端数据转发
+      if (data.type === 'client' && data.serverToken) {
+        if(servers[data.region] && servers[data.region].token === data.serverToken) {
+          await servers[data.region].client.send(JSON.stringify(data))
+        } else {
+          await connection.socket.send(JSON.stringify({ state: false, error: '服务区未注册或验证错误' }))
+        }
+      } else if (data.type === 'server') {
+        if(clients[data.region]) {
+          await clients[data.region].client.send(JSON.stringify(data))
+        } else {
+          await connection.socket.send(JSON.stringify({ state: false, error: '客户端未注册' }))
+        }
+      }
+      
+    } catch (error) {
+      await connection.socket.send(JSON.stringify({ "error": error.message }))
+    }
+  })
+  connection.socket.on('close', () => {
+    // 监听连接关闭事件
+    const response = { code: 403, data: 'Client disconnected', message: 'Client disconnected' }
+    connection.socket.send(JSON.stringify(response))
+  })
+  return request
+}
+server.get('/ws', {
+  websocket: true
+}, wsFn)
 
 server.listen({
   port: serverPort,
