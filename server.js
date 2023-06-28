@@ -49,7 +49,7 @@ server.post('/audio', async (request, reply) => {
   let result
   if (request.headers['content-type'].includes('multipart/form-data')) {
     const files = await request.saveRequestFiles()
-    if (files.length > 0){
+    if (files.length > 0) {
       result = await getPttBuffer(files[0].filepath)
       if (result) {
         reply.send(result.buffer)
@@ -82,7 +82,7 @@ server.post('/screenshot', async (request, reply) => {
     const url = body.url.trim()
     if (/^https?:\/\/.+/.test(url)) {
       if (!await checkWebsite(url)) {
-        reply.send({error: '错误：无法访问指定页面'})
+        reply.send({ error: '错误：无法访问指定页面' })
         return
       }
       let base64 = await screenshot(url, body.option || {})
@@ -92,24 +92,24 @@ server.post('/screenshot', async (request, reply) => {
           reply.type("image/png")
           reply.send(image)
         } else {
-          reply.send({url: url, base64: base64})
+          reply.send({ url: url, base64: base64 })
         }
       } else {
-        reply.send({error: '错误：浏览器崩溃'})
+        reply.send({ error: '错误：浏览器崩溃' })
       }
     } else {
-      reply.send({error: '错误：请输入一个合法的网址'})
+      reply.send({ error: '错误：请输入一个合法的网址' })
     }
   } else {
-    reply.send({error: '错误：无效参数'})
+    reply.send({ error: '错误：无效参数' })
   }
 })
 // 网址检查
 server.post('/check', async (request, reply) => {
   const body = request.body || {}
-  if (!body.url) { 
-    reply.send({ state: 'error', error: '参数错误' }) 
-    return 
+  if (!body.url) {
+    reply.send({ state: 'error', error: '参数错误' })
+    return
   }
   if (await checkWebsite(body.url)) {
     reply.send({ state: 'ok' })
@@ -222,7 +222,7 @@ const wsFn = async (connection, request) => {
               client: connection.socket,
               token: serverToken,
             }
-            await connection.socket.send(JSON.stringify({ state: true, token: serverToken }))
+            await connection.socket.send(JSON.stringify({ command: data.command, state: true, token: serverToken }))
           } else if (data.type === 'client' && data.serverToken) {
             if (servers[data.region] && servers[data.region].token === data.serverToken) {
               clients[data.region] = {
@@ -230,33 +230,33 @@ const wsFn = async (connection, request) => {
                 user: data.user,
                 client: connection.socket,
               }
-              await connection.socket.send(JSON.stringify({ state: true }))
+              await connection.socket.send(JSON.stringify({ command: data.command, state: true }))
             } else {
-              await connection.socket.send(JSON.stringify({ state: false }))
+              await connection.socket.send(JSON.stringify({ command: data.command, state: false }))
             }
           } else {
-            await connection.socket.send(JSON.stringify({ state: false }))
+            await connection.socket.send(JSON.stringify({ command: data.command, state: false }))
           }
         } else {
-          await connection.socket.send(JSON.stringify({ state: false }))
+          await connection.socket.send(JSON.stringify({ command: data.command, state: false }))
         }
         return
       }
       // 客户端数据转发
       if (data.type === 'client' && data.serverToken) {
-        if(servers[data.region] && servers[data.region].token === data.serverToken) {
+        if (servers[data.region] && servers[data.region].token === data.serverToken) {
           await servers[data.region].client.send(JSON.stringify(data))
         } else {
           await connection.socket.send(JSON.stringify({ state: false, error: '服务区未注册或验证错误' }))
         }
       } else if (data.type === 'server') {
-        if(clients[data.region]) {
+        if (clients[data.region]) {
           await clients[data.region].client.send(JSON.stringify(data))
         } else {
           await connection.socket.send(JSON.stringify({ state: false, error: '客户端未注册' }))
         }
       }
-      
+
     } catch (error) {
       await connection.socket.send(JSON.stringify({ "error": error.message }))
     }
